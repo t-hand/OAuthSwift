@@ -192,7 +192,7 @@ open class OAuth2Swift: OAuthSwift {
         }
 
         if let queryString = queryString {
-            let urlString = self.authorizeUrl.urlByAppending(query: queryString)
+            let urlString = self.authorizeUrl.urlByAppending(query: queryString).urlByAppending(query: "state")
             if let url: URL = URL(string: urlString) {
                 self.authorizeURLHandler.handle(url)
                 return self
