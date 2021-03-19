@@ -359,7 +359,7 @@ extension OAuthSwiftHTTPRequest {
         public mutating func updateRequest(credential: OAuthSwiftCredential) {
             let method = self.httpMethod
             let url = self.urlRequest.url!
-            let headers: OAuthSwift.Headers = self.urlRequest.allHTTPHeaderFields ?? [:]
+            var headers: OAuthSwift.Headers = self.urlRequest.allHTTPHeaderFields ?? [:]
             let paramsLocation = self.paramsLocation
             let parameters = self.parameters
 
@@ -367,20 +367,21 @@ extension OAuthSwiftHTTPRequest {
             var signatureParameters = parameters
 
             // Check if body must be hashed (oauth1)
-            let body: Data? = nil
+            var body: Data? = nil
             if method.isBody {
                 if let contentType = headers[kHTTPHeaderContentType]?.lowercased() {
 
                     if contentType.contains("application/json") {
                         // TODO: oauth_body_hash create body before signing if implementing body hashing
-                        /*do {
-                         let jsonData: Data = try JSONSerialization.jsonObject(parameters, options: [])
-                         request.HTTPBody = jsonData
-                         requestHeaders["Content-Length"] = "\(jsonData.length)"
-                         body = jsonData
-                         }
-                         catch {
-                         }*/
+                        do {
+                            let jsonData = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
+//                            request.HTTPBody = jsonData
+                            headers["Content-Length"] = "\(jsonData.count)"
+                            body = jsonData
+                            self.urlRequest.httpBody = jsonData
+                        }
+                        catch {
+                        }
 
                         signatureParameters = [:] // parameters are not used for general signature (could only be used for body hashing
                     }
